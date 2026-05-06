@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liste voyage 2026</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1A1A18">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+body { font-family: -apple-system, sans-serif; padding:20px; background:#F7F5F0; }
+h1 { font-family: Georgia, serif; }
+.item { padding:10px; border:1px solid #ccc; margin:5px 0; border-radius:8px; cursor:pointer;}
+.checked { text-decoration: line-through; opacity:0.5;}
+</style>
+</head>
+<body>
+
+<h1>Liste voyage 2026</h1>
+
+<div id="list"></div>
+
+<script>
+const items = ["Passeport", "Billets", "Téléphone", "Chargeur"];
+let state = JSON.parse(localStorage.getItem("state")||"{}");
+
+function render(){
+  const el = document.getElementById("list");
+  el.innerHTML="";
+  items.forEach(i=>{
+    const div=document.createElement("div");
+    div.className="item"+(state[i]?" checked":"");
+    div.textContent=i;
+    div.onclick=()=>{ state[i]=!state[i]; localStorage.setItem("state",JSON.stringify(state)); render(); };
+    el.appendChild(div);
+  });
+}
+render();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+
+</body>
+</html>
