@@ -3,38 +3,213 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Liste voyage 2026</title>
+<title>Liste de voyage — Mariage & Italie 2026</title>
+
+<!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1A1A18">
 <link rel="apple-touch-icon" href="icon-192.png">
+
 <style>
-body { font-family: -apple-system, sans-serif; padding:20px; background:#F7F5F0; }
-h1 { font-family: Georgia, serif; }
-.item { padding:10px; border:1px solid #ccc; margin:5px 0; border-radius:8px; cursor:pointer;}
-.checked { text-decoration: line-through; opacity:0.5;}
+:root {
+  --bg: #F7F5F0;
+  --card: #FFFFFF;
+  --text: #1A1A18;
+  --muted: #7A7870;
+  --border: rgba(26,26,24,0.1);
+  --accent-mariage: #8B4A6B;
+  --accent-mariage-bg: #F9EEF4;
+  --accent-montagne: #2D5FA6;
+  --accent-montagne-bg: #EBF1FB;
+  --accent-italie: #1A7A5E;
+  --accent-italie-bg: #E6F5F0;
+  --green: #1A7A5E;
+  --shadow: 0 2px 12px rgba(26,26,24,0.06);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 20px;
+}
+
+h1 {
+  font-family: Georgia, serif;
+  font-size: 26px;
+  margin-bottom: 5px;
+}
+
+p { color: var(--muted); font-size: 14px; }
+
+.tab {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  cursor: pointer;
+  font-size: 13px;
+  margin: 4px;
+}
+
+.tab.active {
+  background: var(--text);
+  color: white;
+}
+
+.progress {
+  height: 4px;
+  background: var(--border);
+  border-radius: 3px;
+  margin: 15px 0;
+}
+
+.fill {
+  height: 100%;
+  background: var(--green);
+  width: 0%;
+  transition: 0.3s;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background: var(--card);
+  border-radius: 10px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+.item.checked {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+.badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.badge.mariage { background: var(--accent-mariage-bg); color: var(--accent-mariage); }
+.badge.italie { background: var(--accent-italie-bg); color: var(--accent-italie); }
+.badge.montagne { background: var(--accent-montagne-bg); color: var(--accent-montagne); }
+
+.add {
+  margin-top: 20px;
+  display: flex;
+  gap: 8px;
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  background: var(--text);
+  color: white;
+}
 </style>
 </head>
+
 <body>
 
-<h1>Liste voyage 2026</h1>
+<h1>Liste voyage 2026 ✈️</h1>
+<p>Mariage + Italie</p>
+
+<div>
+  <button class="tab active" onclick="setTab('all')">Tout</button>
+  <button class="tab" onclick="setTab('mariage')">Mariage</button>
+  <button class="tab" onclick="setTab('italie')">Italie</button>
+</div>
+
+<div class="progress"><div class="fill" id="fill"></div></div>
 
 <div id="list"></div>
 
+<div class="add">
+  <input id="input" placeholder="Ajouter un item...">
+  <button onclick="add()">+</button>
+</div>
+
 <script>
-const items = ["Passeport", "Billets", "Téléphone", "Chargeur"];
-let state = JSON.parse(localStorage.getItem("state")||"{}");
+let tab = "all";
+
+let items = JSON.parse(localStorage.getItem("items") || "[]");
+
+if(items.length === 0){
+  items = [
+    {name:"Costume", tag:"mariage", done:false},
+    {name:"Chaussures cérémonie", tag:"mariage", done:false},
+    {name:"Passeport", tag:"italie", done:false},
+    {name:"Billets train", tag:"italie", done:false},
+    {name:"Maillot", tag:"italie", done:false}
+  ];
+}
+
+function save(){
+  localStorage.setItem("items", JSON.stringify(items));
+}
+
+function setTab(t){
+  tab = t;
+  document.querySelectorAll(".tab").forEach(el=>el.classList.remove("active"));
+  event.target.classList.add("active");
+  render();
+}
 
 function render(){
-  const el = document.getElementById("list");
-  el.innerHTML="";
-  items.forEach(i=>{
-    const div=document.createElement("div");
-    div.className="item"+(state[i]?" checked":"");
-    div.textContent=i;
-    div.onclick=()=>{ state[i]=!state[i]; localStorage.setItem("state",JSON.stringify(state)); render(); };
-    el.appendChild(div);
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  let done = 0;
+  let total = 0;
+
+  items.forEach((it,i)=>{
+    if(tab !== "all" && it.tag !== tab) return;
+
+    total++;
+    if(it.done) done++;
+
+    const el = document.createElement("div");
+    el.className = "item" + (it.done ? " checked" : "");
+
+    let badge = "";
+    if(it.tag) badge = `<span class="badge ${it.tag}">${it.tag}</span>`;
+
+    el.innerHTML = `<span>${it.name}</span>${badge}`;
+
+    el.onclick = ()=>{
+      items[i].done = !items[i].done;
+      save();
+      render();
+    };
+
+    list.appendChild(el);
   });
+
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById("fill").style.width = pct + "%";
 }
+
+function add(){
+  const val = document.getElementById("input").value.trim();
+  if(!val) return;
+
+  items.push({name:val, tag:"all", done:false});
+  document.getElementById("input").value = "";
+  save();
+  render();
+}
+
 render();
 
 if ('serviceWorker' in navigator) {
